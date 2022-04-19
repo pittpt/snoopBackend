@@ -23,7 +23,7 @@ router.post("/newUser/:id", (req, res) => {
   });
 });
 
-router.post("/follow", (req, res) => {
+router.post("/follow/:user/:id", (req, res) => {
   MongoClient.connect(url, async (err, db) => {
     var dbo = db.db("users");
     async function findAdrs(collection, adrs) {
@@ -33,8 +33,8 @@ router.post("/follow", (req, res) => {
       return result;
     }
 
-    var collection = req.body.email;
-    var adrs = req.body.adrs;
+    var collection = req.params.user;
+    var adrs = req.params.id;
 
     const search = await findAdrs(collection, adrs);
     if (search == null) {
@@ -55,18 +55,19 @@ router.delete("/unfollow/:user/:id", (req, res) => {
 
     var collection = req.params.user;
     var adrs = req.params.id;
-    console.log(typeof collection);
 
     // collection = collection.toString();
     const result = await dbo
       .collection(collection)
       .deleteOne({ artistId: adrs });
     var deleted = result.deletedCount;
+    console.log("deleted " + deleted);
     if (deleted == 1) res.send("deleted");
     else res.send("not deleted");
   });
 });
 
+//find all followings from the user
 router.get("/getFollows/:id", async (req, res) => {
   const user = req.params.id;
 
@@ -81,6 +82,7 @@ router.get("/getFollows/:id", async (req, res) => {
   });
 });
 
+//find specific following for the user
 router.get("/find/:user/:id", async (req, res) => {
   const user = req.params.user;
   const id = req.params.id;
@@ -93,8 +95,8 @@ router.get("/find/:user/:id", async (req, res) => {
 
     const result = await dbo.collection(user).findOne({ artistId: id });
     console.log(result);
-    if (result) res.send(true);
-    else res.send(false);
+    if (result) res.status(200).send(true);
+    else res.status(400).send(false);
   });
 });
 
@@ -104,62 +106,62 @@ router.get("/find/:user/:id", async (req, res) => {
 //
 //
 
-//Post Method
-router.post("/post", async (req, res) => {
-  const data = new Model({
-    name: req.body.name,
-    age: req.body.age,
-  });
-  try {
-    const dataToSave = await data.save();
-    res.status(200).json(dataToSave);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+// //Post Method
+// router.post("/post", async (req, res) => {
+//   const data = new Model({
+//     name: req.body.name,
+//     age: req.body.age,
+//   });
+//   try {
+//     const dataToSave = await data.save();
+//     res.status(200).json(dataToSave);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// });
 
-//Get all Method
-router.get("/getAll", async (req, res) => {
-  try {
-    const data = await Model.find();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+// //Get all Method
+// router.get("/getAll", async (req, res) => {
+//   try {
+//     const data = await Model.find();
+//     res.json(data);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
-//Get by ID Method
-router.get("/getOne/:id", async (req, res) => {
-  try {
-    const data = await Model.findById(req.params.id);
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+// //Get by ID Method
+// router.get("/getOne/:id", async (req, res) => {
+//   try {
+//     const data = await Model.findById(req.params.id);
+//     res.json(data);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
-//Update by ID Method
-router.patch("/update/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const updatedData = req.body;
-    const options = { new: true };
+// //Update by ID Method
+// router.patch("/update/:id", async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const updatedData = req.body;
+//     const options = { new: true };
 
-    const result = await Model.findByIdAndUpdate(id, updatedData, options);
+//     const result = await Model.findByIdAndUpdate(id, updatedData, options);
 
-    res.send(result);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+//     res.send(result);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// });
 
-//Delete by ID Method
-router.delete("/delete/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-    const data = await Model.findByIdAndDelete(id);
-    res.send(`Document with ${data.name} has been deleted..`);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+// //Delete by ID Method
+// router.delete("/delete/:id", async (req, res) => {
+//   try {
+//     const id = req.params.id;
+//     const data = await Model.findByIdAndDelete(id);
+//     res.send(`Document with ${data.name} has been deleted..`);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// });
